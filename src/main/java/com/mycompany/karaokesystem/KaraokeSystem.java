@@ -44,6 +44,17 @@ public class KaraokeSystem {
             System.out.println("Room tidak ditemukan.");
         }
     }
+    
+    public static void simulasiProses(RoomKaraoke room) {
+
+        System.out.println("\n--------------------------------");
+        System.out.println("       SIMULASI DYNAMIC BINDING");
+        System.out.println("--------------------------------");
+
+        room.tampilkanInfo();
+
+        System.out.println("Proses berhasil.");
+    }
 
     public static void main(String[] args) {
 
@@ -64,7 +75,8 @@ public class KaraokeSystem {
             System.out.println("1. Tambah Room");
             System.out.println("2. Tampilkan Semua Room");
             System.out.println("3. Cari Room");
-            System.out.println("4. Keluar");
+            System.out.println("4. Simulasi Dynamic Binding");
+            System.out.println("5. Keluar");
             System.out.println("==================================================");
             System.out.print("Pilih menu: ");
 
@@ -85,6 +97,7 @@ public class KaraokeSystem {
                     System.out.println("-------------------------------");
                     System.out.println("1. Room Regular");
                     System.out.println("2. Room VIP");
+                    System.out.println("3. Room Family");
                     System.out.print("Pilih tipe room: ");
 
                     int tipeRoom = scanner.nextInt();
@@ -127,7 +140,17 @@ public class KaraokeSystem {
                         System.out.println("Room VIP berhasil ditambahkan.");
                         jumlahData++;
 
-                    } else {
+                    } else if (tipeRoom == 3) {
+
+                        daftarRoom[jumlahData] = new RoomFamily(
+                                namaRoom,
+                                kapasitas,
+                                hargaPerJam,
+                                fasilitas
+                        );
+
+                        System.out.println("Room Family berhasil ditambahkan.");
+                        jumlahData++;
 
                         System.out.println("Pilihan tipe room tidak tersedia.");
                     }
@@ -210,6 +233,25 @@ public class KaraokeSystem {
                     break;
 
                 case 4:
+
+                    if (jumlahData == 0) {
+
+                        System.out.println("\nBelum ada data room.");
+
+                    } else {
+
+                        System.out.println("\n========================================");
+                        System.out.println("       SIMULASI DYNAMIC BINDING");
+                        System.out.println("========================================");
+
+                        for (int i = 0; i < jumlahData; i++) {
+                            simulasiProses(daftarRoom[i]);
+                        }
+                    }
+
+                    break;
+
+                case 5:
                     isRunning = false;
                     break;
 
