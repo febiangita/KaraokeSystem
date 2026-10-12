@@ -1,10 +1,12 @@
 package com.mycompany.karaokesystem;
 
-public class RoomRegular extends RoomKaraoke {
+public class RoomRegular extends RoomKaraoke
+        implements DapatDipesan, DapatDiberiRating {
 
     private String fasilitas;
 
-    public RoomRegular(String namaRoom, int kapasitas, double hargaPerJam, String fasilitas) {
+    public RoomRegular(String namaRoom, int kapasitas,
+            double hargaPerJam, String fasilitas) {
         super(namaRoom, kapasitas, hargaPerJam);
         this.setFasilitas(fasilitas);
     }
@@ -18,6 +20,28 @@ public class RoomRegular extends RoomKaraoke {
             this.fasilitas = fasilitas;
         } else {
             this.fasilitas = "Sound System";
+        }
+    }
+
+    @Override
+    public double hitungBiaya(int durasiJam) {
+        return getHargaPerJam() * durasiJam;
+    }
+
+    @Override
+    public void pesanRoom(int durasiJam) {
+        System.out.println("Room Regular dipesan selama "
+                + durasiJam + " jam.");
+        System.out.println("Total biaya: Rp"
+                + hitungBiaya(durasiJam));
+    }
+
+    @Override
+    public void beriRating(int rating) {
+        if (rating >= 1 && rating <= 5) {
+            System.out.println("Rating Room Regular: " + rating + "/5");
+        } else {
+            System.out.println("Rating harus antara 1 sampai 5!");
         }
     }
 

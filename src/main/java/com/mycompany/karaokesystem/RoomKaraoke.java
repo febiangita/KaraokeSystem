@@ -1,6 +1,6 @@
 package com.mycompany.karaokesystem;
 
-public class RoomKaraoke {
+public abstract class RoomKaraoke {
 
     private String namaRoom;
     private int kapasitas;
@@ -54,6 +54,8 @@ public class RoomKaraoke {
     public static int getJumlahRoom() {
         return jumlahRoom;
     }
+
+    public abstract double hitungBiaya(int durasiJam);
 
     public void tampilkanInfo() {
         System.out.printf("%-15s %-15s %-10d Rp%-10.0f%n",
