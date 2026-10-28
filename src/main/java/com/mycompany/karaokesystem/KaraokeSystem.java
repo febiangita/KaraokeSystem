@@ -1,337 +1,336 @@
 package com.mycompany.karaokesystem;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.Map;
 import java.util.Scanner;
 
 public class KaraokeSystem {
 
-    public static void cariRoom(
-            String namaRoom,
-            RoomKaraoke[] daftarRoom,
-            int jumlahData) {
+    private static final Scanner scanner = new Scanner(System.in);
 
-        boolean ditemukan = false;
+    private static final ArrayList<RoomKaraoke> daftarRoom =
+            new ArrayList<>();
 
-        System.out.println("\nMencari room dengan nama: " + namaRoom);
+    private static final HashMap<String, String> daftarPelanggan =
+            new HashMap<>();
 
-        for (int i = 0; i < jumlahData; i++) {
-            if (daftarRoom[i].getNamaRoom()
-                    .equalsIgnoreCase(namaRoom)) {
-
-                System.out.println("Room ditemukan:");
-                daftarRoom[i].tampilkanInfo();
-                ditemukan = true;
-            }
-        }
-
-        if (!ditemukan) {
-            System.out.println("Room tidak ditemukan.");
+    public static void validasiNama(String nama)
+            throws KaraokeException {
+        if (nama == null || nama.trim().isEmpty()) {
+            throw new KaraokeException("Nama tidak boleh kosong.");
         }
     }
 
-    public static void cariRoom(
-            String namaRoom,
-            double hargaMaksimal,
-            RoomKaraoke[] daftarRoom,
-            int jumlahData) {
+    public static RoomKaraoke cariRoom(String nama)
+            throws KaraokeException {
+        validasiNama(nama);
 
-        boolean ditemukan = false;
-
-        System.out.println("\nMencari room: " + namaRoom
-                + " dengan harga maksimal Rp" + hargaMaksimal);
-
-        for (int i = 0; i < jumlahData; i++) {
-            if (daftarRoom[i].getNamaRoom()
-                    .equalsIgnoreCase(namaRoom)
-                    && daftarRoom[i].getHargaPerJam()
-                    <= hargaMaksimal) {
-
-                System.out.println("Room ditemukan:");
-                daftarRoom[i].tampilkanInfo();
-                ditemukan = true;
+        for (RoomKaraoke room : daftarRoom) {
+            if (room.getNamaRoom().equalsIgnoreCase(nama)) {
+                return room;
             }
         }
 
-        if (!ditemukan) {
-            System.out.println("Room tidak ditemukan.");
-        }
+        throw new KaraokeException(
+                "Room '" + nama + "' tidak ditemukan.");
     }
 
-    public static void simulasiProses(RoomKaraoke room) {
+    public static String cariPelanggan(String id)
+            throws KaraokeException {
+        validasiNama(id);
 
-        System.out.println("\n--------------------------------");
-        System.out.println("     SIMULASI DYNAMIC BINDING");
-        System.out.println("--------------------------------");
+        if (!daftarPelanggan.containsKey(id)) {
+            throw new KaraokeException(
+                    "Pelanggan dengan ID " + id + " tidak ditemukan.");
+        }
 
+        return daftarPelanggan.get(id);
+    }
+
+    private static void isiDataAwal() {
+        daftarRoom.add(new RoomRegular(
+                "Regular A", 3, 50000, "Sound System"));
+        daftarRoom.add(new RoomRegular(
+                "Regular B", 4, 60000, "Sound System"));
+        daftarRoom.add(new RoomVIP(
+                "VIP A", 6, 100000, "Sound System + TV"));
+        daftarRoom.add(new RoomVIP(
+                "VIP B", 8, 125000, "Sound System + TV"));
+        daftarRoom.add(new RoomFamily(
+                "Family A", 10, 150000, "TV + Sofa"));
+
+        daftarPelanggan.put("P001", "Andi");
+        daftarPelanggan.put("P002", "Budi");
+        daftarPelanggan.put("P003", "Citra");
+    }
+
+    private static void tampilkanSemuaRoom() {
+        if (daftarRoom.isEmpty()) {
+            System.out.println("Belum ada data room.");
+            return;
+        }
+
+        System.out.println("\n--- DAFTAR ROOM KARAOKE ---");
+        System.out.printf("%-15s %-15s %-10s %-13s %-20s%n",
+                "Nama Room", "Tipe", "Kapasitas",
+                "Harga/Jam", "Fasilitas");
+
+        for (RoomKaraoke room : daftarRoom) {
+            room.tampilkanInfo();
+        }
+
+        System.out.println("Total room: " + daftarRoom.size());
+    }
+
+    private static void tambahRoom() throws KaraokeException {
+        System.out.println("\n1. Room Regular");
+        System.out.println("2. Room VIP");
+        System.out.println("3. Room Family");
+        System.out.print("Pilih tipe room: ");
+
+        int tipe = scanner.nextInt();
+        scanner.nextLine();
+
+        if (tipe < 1 || tipe > 3) {
+            throw new KaraokeException("Tipe room tidak tersedia.");
+        }
+
+        System.out.print("Nama room: ");
+        String nama = scanner.nextLine().trim();
+        validasiNama(nama);
+
+        for (RoomKaraoke room : daftarRoom) {
+            if (room.getNamaRoom().equalsIgnoreCase(nama)) {
+                throw new KaraokeException(
+                        "Nama room sudah digunakan.");
+            }
+        }
+
+        System.out.print("Kapasitas: ");
+        int kapasitas = scanner.nextInt();
+
+        System.out.print("Harga per jam: ");
+        double harga = scanner.nextDouble();
+        scanner.nextLine();
+
+        System.out.print("Fasilitas: ");
+        String fasilitas = scanner.nextLine().trim();
+
+        validasiNama(fasilitas);
+
+        if (kapasitas <= 0 || harga <= 0) {
+            throw new KaraokeException(
+                    "Kapasitas dan harga harus lebih dari 0.");
+        }
+
+        RoomKaraoke roomBaru;
+
+        switch (tipe) {
+            case 1:
+                roomBaru = new RoomRegular(
+                        nama, kapasitas, harga, fasilitas);
+                break;
+            case 2:
+                roomBaru = new RoomVIP(
+                        nama, kapasitas, harga, fasilitas);
+                break;
+            default:
+                roomBaru = new RoomFamily(
+                        nama, kapasitas, harga, fasilitas);
+                break;
+        }
+
+        daftarRoom.add(roomBaru);
+        System.out.println("Room berhasil ditambahkan!");
+    }
+
+    private static void cariRoomMenu() throws KaraokeException {
+        System.out.print("Masukkan nama room: ");
+        String nama = scanner.nextLine();
+
+        RoomKaraoke room = cariRoom(nama);
+        System.out.println("Room ditemukan:");
         room.tampilkanInfo();
+    }
 
-        System.out.println("Proses berhasil.");
+    private static void simulasiDynamicBinding()
+            throws KaraokeException {
+        if (daftarRoom.isEmpty()) {
+            throw new KaraokeException("Belum ada data room.");
+        }
+
+        for (RoomKaraoke room : daftarRoom) {
+            room.tampilkanInfo();
+            System.out.println("Biaya 1 jam: Rp"
+                    + room.hitungBiaya(1));
+        }
+    }
+
+    private static void pesanRoom() throws KaraokeException {
+        System.out.print("Masukkan nama room: ");
+        String nama = scanner.nextLine();
+
+        RoomKaraoke room = cariRoom(nama);
+
+        System.out.print("Durasi pemakaian (jam): ");
+        int durasi = scanner.nextInt();
+        scanner.nextLine();
+
+        if (durasi <= 0) {
+            throw new KaraokeException(
+                    "Durasi harus lebih dari 0 jam.");
+        }
+
+        if (room instanceof DapatDipesan) {
+            ((DapatDipesan) room).pesanRoom(durasi);
+        } else {
+            throw new KaraokeException(
+                    "Room tidak mendukung pemesanan.");
+        }
+    }
+
+    private static void beriRating() throws KaraokeException {
+        System.out.print("Masukkan nama room: ");
+        String nama = scanner.nextLine();
+
+        RoomKaraoke room = cariRoom(nama);
+
+        System.out.print("Masukkan rating (1-5): ");
+        int rating = scanner.nextInt();
+        scanner.nextLine();
+
+        if (rating < 1 || rating > 5) {
+            throw new KaraokeException(
+                    "Rating harus antara 1 sampai 5.");
+        }
+
+        if (room instanceof DapatDiberiRating) {
+            ((DapatDiberiRating) room).beriRating(rating);
+        } else {
+            throw new KaraokeException(
+                    "Room tidak mendukung rating.");
+        }
+    }
+
+    private static void tambahPelanggan()
+            throws KaraokeException {
+        System.out.print("ID pelanggan: ");
+        String id = scanner.nextLine().trim();
+        validasiNama(id);
+
+        if (daftarPelanggan.containsKey(id)) {
+            throw new KaraokeException(
+                    "ID pelanggan sudah terdaftar.");
+        }
+
+        System.out.print("Nama pelanggan: ");
+        String nama = scanner.nextLine().trim();
+        validasiNama(nama);
+
+        daftarPelanggan.put(id, nama);
+        System.out.println("Pelanggan berhasil ditambahkan.");
+    }
+
+    private static void cariPelangganMenu()
+            throws KaraokeException {
+        System.out.print("Masukkan ID pelanggan: ");
+        String id = scanner.nextLine().trim();
+
+        System.out.println("Nama pelanggan: "
+                + cariPelanggan(id));
+    }
+
+    private static void tampilkanPelanggan() {
+        if (daftarPelanggan.isEmpty()) {
+            System.out.println("Belum ada data pelanggan.");
+            return;
+        }
+
+        System.out.println("\n--- DAFTAR PELANGGAN ---");
+
+        for (Map.Entry<String, String> data
+                : daftarPelanggan.entrySet()) {
+            System.out.println("ID: " + data.getKey()
+                    + " | Nama: " + data.getValue());
+        }
+
+        System.out.println("Total pelanggan: "
+                + daftarPelanggan.size());
     }
 
     public static void main(String[] args) {
+        isiDataAwal();
+        boolean berjalan = true;
 
-        Scanner scanner = new Scanner(System.in);
+        while (berjalan) {
+            try {
+                System.out.println("\n==============================");
+                System.out.println("       KARAOKE SYSTEM");
+                System.out.println("==============================");
+                System.out.println("1. Tambah Room");
+                System.out.println("2. Tampilkan Semua Room");
+                System.out.println("3. Cari Room");
+                System.out.println("4. Simulasi Dynamic Binding");
+                System.out.println("5. Pesan Room");
+                System.out.println("6. Beri Rating");
+                System.out.println("7. Tambah Pelanggan");
+                System.out.println("8. Cari Pelanggan");
+                System.out.println("9. Tampilkan Pelanggan");
+                System.out.println("10. Keluar");
+                System.out.print("Pilih menu: ");
 
-        RoomKaraoke[] daftarRoom = new RoomKaraoke[10];
+                int pilihan = scanner.nextInt();
+                scanner.nextLine();
 
-        int jumlahData = 0;
-        int pilihan;
-        boolean isRunning = true;
-
-        while (isRunning) {
-
-            System.out.println("\n==================================================");
-            System.out.println("                 KARAOKE SYSTEM");
-            System.out.println("          Sistem Manajemen Room Karaoke");
-            System.out.println("==================================================");
-            System.out.println("1. Tambah Room");
-            System.out.println("2. Tampilkan Semua Room");
-            System.out.println("3. Cari Room");
-            System.out.println("4. Simulasi Dynamic Binding");
-            System.out.println("5. Pesan Room");
-            System.out.println("6. Beri Rating");
-            System.out.println("7. Keluar");
-            System.out.println("==================================================");
-            System.out.print("Pilih menu: ");
-
-            pilihan = scanner.nextInt();
-            scanner.nextLine();
-
-            switch (pilihan) {
-
-                case 1:
-
-                    if (jumlahData >= daftarRoom.length) {
-                        System.out.println("Data room sudah penuh.");
+                switch (pilihan) {
+                    case 1:
+                        tambahRoom();
                         break;
-                    }
-
-                    System.out.println("\n--- TAMBAH ROOM ---");
-                    System.out.println("1. Room Regular");
-                    System.out.println("2. Room VIP");
-                    System.out.println("3. Room Family");
-                    System.out.print("Pilih tipe room: ");
-
-                    int tipeRoom = scanner.nextInt();
-                    scanner.nextLine();
-
-                    if (tipeRoom < 1 || tipeRoom > 3) {
-                        System.out.println(
-                                "Pilihan tipe room tidak tersedia.");
+                    case 2:
+                        tampilkanSemuaRoom();
                         break;
-                    }
-
-                    System.out.print("Nama Room       : ");
-                    String namaRoom = scanner.nextLine();
-
-                    System.out.print("Kapasitas       : ");
-                    int kapasitas = scanner.nextInt();
-
-                    System.out.print("Harga Per Jam   : ");
-                    double hargaPerJam = scanner.nextDouble();
-                    scanner.nextLine();
-
-                    System.out.print("Fasilitas       : ");
-                    String fasilitas = scanner.nextLine();
-
-                    if (tipeRoom == 1) {
-                        daftarRoom[jumlahData] = new RoomRegular(
-                                namaRoom, kapasitas,
-                                hargaPerJam, fasilitas);
-
-                        System.out.println(
-                                "Room Regular berhasil ditambahkan.");
-
-                    } else if (tipeRoom == 2) {
-                        daftarRoom[jumlahData] = new RoomVIP(
-                                namaRoom, kapasitas,
-                                hargaPerJam, fasilitas);
-
-                        System.out.println(
-                                "Room VIP berhasil ditambahkan.");
-
-                    } else {
-                        daftarRoom[jumlahData] = new RoomFamily(
-                                namaRoom, kapasitas,
-                                hargaPerJam, fasilitas);
-
-                        System.out.println(
-                                "Room Family berhasil ditambahkan.");
-                    }
-
-                    jumlahData++;
-                    break;
-
-                case 2:
-
-                    if (jumlahData == 0) {
-                        System.out.println("\nBelum ada data room.");
-                    } else {
-                        System.out.println("\n--- DAFTAR ROOM KARAOKE ---");
-
-                        System.out.printf(
-                                "%-15s %-15s %-10s %-13s %-20s%n",
-                                "Nama Room", "Tipe", "Kapasitas",
-                                "Harga/Jam", "Fasilitas");
-
-                        System.out.println(
-                                "---------------------------------------------------------------");
-
-                        for (int i = 0; i < jumlahData; i++) {
-                            daftarRoom[i].tampilkanInfo();
-                        }
-
-                        System.out.println(
-                                "Total Room Dibuat: "
-                                + RoomKaraoke.getJumlahRoom());
-                    }
-
-                    break;
-
-                case 3:
-
-                    if (jumlahData == 0) {
-                        System.out.println("\nBelum ada data room.");
+                    case 3:
+                        cariRoomMenu();
                         break;
-                    }
-
-                    System.out.println("\n--- CARI ROOM ---");
-                    System.out.println("1. Cari berdasarkan nama");
-                    System.out.println(
-                            "2. Cari berdasarkan nama dan harga");
-                    System.out.print("Pilih pencarian: ");
-
-                    int pilihanCari = scanner.nextInt();
-                    scanner.nextLine();
-
-                    if (pilihanCari == 1) {
-                        System.out.print("Masukkan nama room: ");
-                        String namaCari = scanner.nextLine();
-
-                        cariRoom(namaCari, daftarRoom, jumlahData);
-
-                    } else if (pilihanCari == 2) {
-                        System.out.print("Masukkan nama room: ");
-                        String namaCari = scanner.nextLine();
-
-                        System.out.print("Masukkan harga maksimal: ");
-                        double hargaMaksimal = scanner.nextDouble();
-                        scanner.nextLine();
-
-                        cariRoom(namaCari, hargaMaksimal,
-                                daftarRoom, jumlahData);
-
-                    } else {
-                        System.out.println(
-                                "Pilihan pencarian tidak tersedia.");
-                    }
-
-                    break;
-
-                case 4:
-
-                    if (jumlahData == 0) {
-                        System.out.println("\nBelum ada data room.");
-                    } else {
-                        for (int i = 0; i < jumlahData; i++) {
-                            simulasiProses(daftarRoom[i]);
-                        }
-                    }
-
-                    break;
-
-                case 5:
-
-                    if (jumlahData == 0) {
-                        System.out.println("\nBelum ada data room.");
+                    case 4:
+                        simulasiDynamicBinding();
                         break;
-                    }
-
-                    System.out.println("\n--- PESAN ROOM ---");
-
-                    for (int i = 0; i < jumlahData; i++) {
-                        System.out.print((i + 1) + ". ");
-                        daftarRoom[i].tampilkanInfo();
-                    }
-
-                    System.out.print("Pilih nomor room: ");
-                    int nomorRoom = scanner.nextInt();
-
-                    if (nomorRoom < 1 || nomorRoom > jumlahData) {
-                        System.out.println("Nomor room tidak valid.");
+                    case 5:
+                        pesanRoom();
                         break;
-                    }
-
-                    System.out.print("Durasi pemakaian (jam): ");
-                    int durasiJam = scanner.nextInt();
-
-                    if (durasiJam <= 0) {
-                        System.out.println(
-                                "Durasi harus lebih dari 0 jam.");
+                    case 6:
+                        beriRating();
                         break;
-                    }
-
-                    RoomKaraoke roomPesanan =
-                            daftarRoom[nomorRoom - 1];
-
-                    System.out.println("\n--- KONFIRMASI PESANAN ---");
-
-                    if (roomPesanan instanceof DapatDipesan) {
-                        ((DapatDipesan) roomPesanan)
-                                .pesanRoom(durasiJam);
-                    } else {
-                        System.out.println(
-                                "Room ini tidak mendukung pemesanan.");
-                    }
-
-                    break;
-
-                case 6:
-
-                    if (jumlahData == 0) {
-                        System.out.println("\nBelum ada data room.");
+                    case 7:
+                        tambahPelanggan();
                         break;
-                    }
-
-                    System.out.println("\n--- BERI RATING ---");
-
-                    for (int i = 0; i < jumlahData; i++) {
-                        System.out.print((i + 1) + ". ");
-                        daftarRoom[i].tampilkanInfo();
-                    }
-
-                    System.out.print("Pilih nomor room: ");
-                    int nomorRating = scanner.nextInt();
-
-                    if (nomorRating < 1
-                            || nomorRating > jumlahData) {
-                        System.out.println("Nomor room tidak valid.");
+                    case 8:
+                        cariPelangganMenu();
                         break;
-                    }
+                    case 9:
+                        tampilkanPelanggan();
+                        break;
+                    case 10:
+                        berjalan = false;
+                        System.out.println("Program selesai.");
+                        break;
+                    default:
+                        throw new KaraokeException(
+                                "Pilihan menu tidak tersedia.");
+                }
 
-                    System.out.print("Masukkan rating (1-5): ");
-                    int rating = scanner.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println(
+                        "Error: Masukkan angka yang valid.");
+                scanner.nextLine();
 
-                    RoomKaraoke roomRating =
-                            daftarRoom[nomorRating - 1];
+            } catch (KaraokeException e) {
+                System.out.println("Error: " + e.getMessage());
 
-                    if (roomRating instanceof DapatDiberiRating) {
-                        ((DapatDiberiRating) roomRating)
-                                .beriRating(rating);
-                    } else {
-                        System.out.println(
-                                "Room ini tidak mendukung rating.");
-                    }
-
-                    break;
-
-                case 7:
-                    isRunning = false;
-                    System.out.println("Program selesai.");
-                    break;
-
-                default:
-                    System.out.println(
-                            "Pilihan menu tidak tersedia.");
+            } finally {
+                System.out.println("Proses menu selesai.");
             }
         }
 
