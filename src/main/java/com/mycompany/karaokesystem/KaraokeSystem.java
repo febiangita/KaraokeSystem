@@ -1,20 +1,13 @@
 package com.mycompany.karaokesystem;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.InputMismatchException;
-import java.util.Map;
 import java.util.Scanner;
 
 public class KaraokeSystem {
 
     private static final Scanner scanner = new Scanner(System.in);
-
-    private static final ArrayList<RoomKaraoke> daftarRoom =
-            new ArrayList<>();
-
-    private static final HashMap<String, String> daftarPelanggan =
-            new HashMap<>();
+    private static final ManajemenKaraoke manajemen =
+            new ManajemenKaraoke();
 
     public static void validasiNama(String nama)
             throws KaraokeException {
@@ -26,62 +19,21 @@ public class KaraokeSystem {
     public static RoomKaraoke cariRoom(String nama)
             throws KaraokeException {
         validasiNama(nama);
-
-        for (RoomKaraoke room : daftarRoom) {
-            if (room.getNamaRoom().equalsIgnoreCase(nama)) {
-                return room;
-            }
-        }
-
-        throw new KaraokeException(
-                "Room '" + nama + "' tidak ditemukan.");
+        return manajemen.cariRoom(nama);
     }
 
-    public static String cariPelanggan(String id)
+    public static Pelanggan cariPelanggan(String id)
             throws KaraokeException {
         validasiNama(id);
-
-        if (!daftarPelanggan.containsKey(id)) {
-            throw new KaraokeException(
-                    "Pelanggan dengan ID " + id + " tidak ditemukan.");
-        }
-
-        return daftarPelanggan.get(id);
+        return manajemen.cariPelanggan(id);
     }
 
-    private static void isiDataAwal() {
-        daftarRoom.add(new RoomRegular(
-                "Regular A", 3, 50000, "Sound System"));
-        daftarRoom.add(new RoomRegular(
-                "Regular B", 4, 60000, "Sound System"));
-        daftarRoom.add(new RoomVIP(
-                "VIP A", 6, 100000, "Sound System + TV"));
-        daftarRoom.add(new RoomVIP(
-                "VIP B", 8, 125000, "Sound System + TV"));
-        daftarRoom.add(new RoomFamily(
-                "Family A", 10, 150000, "TV + Sofa"));
-
-        daftarPelanggan.put("P001", "Andi");
-        daftarPelanggan.put("P002", "Budi");
-        daftarPelanggan.put("P003", "Citra");
+    private static void isiDataAwal() throws KaraokeException {
+        manajemen.isiDataAwal();
     }
 
     private static void tampilkanSemuaRoom() {
-        if (daftarRoom.isEmpty()) {
-            System.out.println("Belum ada data room.");
-            return;
-        }
-
-        System.out.println("\n--- DAFTAR ROOM KARAOKE ---");
-        System.out.printf("%-15s %-15s %-10s %-13s %-20s%n",
-                "Nama Room", "Tipe", "Kapasitas",
-                "Harga/Jam", "Fasilitas");
-
-        for (RoomKaraoke room : daftarRoom) {
-            room.tampilkanInfo();
-        }
-
-        System.out.println("Total room: " + daftarRoom.size());
+        manajemen.lihatSemuaRoom();
     }
 
     private static void tambahRoom() throws KaraokeException {
@@ -101,13 +53,6 @@ public class KaraokeSystem {
         String nama = scanner.nextLine().trim();
         validasiNama(nama);
 
-        for (RoomKaraoke room : daftarRoom) {
-            if (room.getNamaRoom().equalsIgnoreCase(nama)) {
-                throw new KaraokeException(
-                        "Nama room sudah digunakan.");
-            }
-        }
-
         System.out.print("Kapasitas: ");
         int kapasitas = scanner.nextInt();
 
@@ -117,33 +62,29 @@ public class KaraokeSystem {
 
         System.out.print("Fasilitas: ");
         String fasilitas = scanner.nextLine().trim();
-
         validasiNama(fasilitas);
 
         if (kapasitas <= 0 || harga <= 0) {
             throw new KaraokeException(
-                    "Kapasitas dan harga harus lebih dari 0.");
+                    "Kapasitas dan harga harus lebih dari 0."
+            );
         }
 
         RoomKaraoke roomBaru;
 
         switch (tipe) {
             case 1:
-                roomBaru = new RoomRegular(
-                        nama, kapasitas, harga, fasilitas);
+                roomBaru = new RoomRegular(nama, kapasitas, harga, fasilitas);
                 break;
             case 2:
-                roomBaru = new RoomVIP(
-                        nama, kapasitas, harga, fasilitas);
+                roomBaru = new RoomVIP(nama, kapasitas, harga, fasilitas);
                 break;
             default:
-                roomBaru = new RoomFamily(
-                        nama, kapasitas, harga, fasilitas);
+                roomBaru = new RoomFamily(nama, kapasitas, harga, fasilitas);
                 break;
         }
 
-        daftarRoom.add(roomBaru);
-        System.out.println("Room berhasil ditambahkan!");
+        manajemen.tambahRoom(roomBaru);
     }
 
     private static void cariRoomMenu() throws KaraokeException {
@@ -157,14 +98,15 @@ public class KaraokeSystem {
 
     private static void simulasiDynamicBinding()
             throws KaraokeException {
-        if (daftarRoom.isEmpty()) {
+
+        if (manajemen.getJumlahRoom() == 0) {
             throw new KaraokeException("Belum ada data room.");
         }
 
-        for (RoomKaraoke room : daftarRoom) {
+        for (int i = 0; i < manajemen.getJumlahRoom(); i++) {
+            RoomKaraoke room = manajemen.getRoom(i);
             room.tampilkanInfo();
-            System.out.println("Biaya 1 jam: Rp"
-                    + room.hitungBiaya(1));
+            System.out.println("Biaya 1 jam: Rp" + room.hitungBiaya(1));
         }
     }
 
@@ -180,15 +122,51 @@ public class KaraokeSystem {
 
         if (durasi <= 0) {
             throw new KaraokeException(
-                    "Durasi harus lebih dari 0 jam.");
+                    "Durasi harus lebih dari 0 jam."
+            );
         }
 
         if (room instanceof DapatDipesan) {
             ((DapatDipesan) room).pesanRoom(durasi);
         } else {
             throw new KaraokeException(
-                    "Room tidak mendukung pemesanan.");
+                    "Room tidak mendukung pemesanan."
+            );
         }
+    }
+
+    private static void transaksiPemesanan()
+            throws KaraokeException {
+
+        System.out.println("\n=== ASSOCIATION ===");
+        manajemen.lihatSemuaPelanggan();
+
+        System.out.print("Masukkan ID pelanggan: ");
+        String id = scanner.nextLine().trim();
+
+        Pelanggan pelanggan = cariPelanggan(id);
+
+        manajemen.lihatSemuaRoom();
+
+        System.out.print("Masukkan nama room: ");
+        String namaRoom = scanner.nextLine();
+
+        RoomKaraoke room = cariRoom(namaRoom);
+
+        System.out.print("Durasi pemakaian (jam): ");
+        int durasi = scanner.nextInt();
+        scanner.nextLine();
+
+        if (durasi <= 0) {
+            throw new KaraokeException(
+                    "Durasi harus lebih dari 0 jam."
+            );
+        }
+
+        TransaksiPemesanan transaksi =
+                new TransaksiPemesanan(pelanggan, room, durasi);
+
+        transaksi.prosesTransaksi();
     }
 
     private static void beriRating() throws KaraokeException {
@@ -203,72 +181,66 @@ public class KaraokeSystem {
 
         if (rating < 1 || rating > 5) {
             throw new KaraokeException(
-                    "Rating harus antara 1 sampai 5.");
+                    "Rating harus antara 1 sampai 5."
+            );
         }
 
         if (room instanceof DapatDiberiRating) {
             ((DapatDiberiRating) room).beriRating(rating);
         } else {
             throw new KaraokeException(
-                    "Room tidak mendukung rating.");
+                    "Room tidak mendukung rating."
+            );
         }
     }
 
     private static void tambahPelanggan()
             throws KaraokeException {
+
         System.out.print("ID pelanggan: ");
         String id = scanner.nextLine().trim();
         validasiNama(id);
-
-        if (daftarPelanggan.containsKey(id)) {
-            throw new KaraokeException(
-                    "ID pelanggan sudah terdaftar.");
-        }
 
         System.out.print("Nama pelanggan: ");
         String nama = scanner.nextLine().trim();
         validasiNama(nama);
 
-        daftarPelanggan.put(id, nama);
-        System.out.println("Pelanggan berhasil ditambahkan.");
+        manajemen.tambahPelanggan(new Pelanggan(id, nama));
     }
 
     private static void cariPelangganMenu()
             throws KaraokeException {
+
         System.out.print("Masukkan ID pelanggan: ");
         String id = scanner.nextLine().trim();
 
-        System.out.println("Nama pelanggan: "
-                + cariPelanggan(id));
+        Pelanggan pelanggan = cariPelanggan(id);
+        System.out.println("Nama pelanggan: " + pelanggan.getNama());
     }
 
     private static void tampilkanPelanggan() {
-        if (daftarPelanggan.isEmpty()) {
-            System.out.println("Belum ada data pelanggan.");
-            return;
-        }
+        manajemen.lihatSemuaPelanggan();
+    }
 
-        System.out.println("\n--- DAFTAR PELANGGAN ---");
-
-        for (Map.Entry<String, String> data
-                : daftarPelanggan.entrySet()) {
-            System.out.println("ID: " + data.getKey()
-                    + " | Nama: " + data.getValue());
-        }
-
-        System.out.println("Total pelanggan: "
-                + daftarPelanggan.size());
+    private static void tampilkanFasilitas() {
+        manajemen.tampilkanFasilitas();
     }
 
     public static void main(String[] args) {
-        isiDataAwal();
+        try {
+            isiDataAwal();
+        } catch (KaraokeException e) {
+            System.out.println("Gagal mengisi data awal: " + e.getMessage());
+            return;
+        }
+
         boolean berjalan = true;
 
         while (berjalan) {
             try {
-                System.out.println("\n==============================");
-                System.out.println("       KARAOKE SYSTEM");
-                System.out.println("==============================");
+                System.out.println("\n================================");
+                System.out.println("         KARAOKE SYSTEM");
+                System.out.println("================================");
                 System.out.println("1. Tambah Room");
                 System.out.println("2. Tampilkan Semua Room");
                 System.out.println("3. Cari Room");
@@ -278,7 +250,10 @@ public class KaraokeSystem {
                 System.out.println("7. Tambah Pelanggan");
                 System.out.println("8. Cari Pelanggan");
                 System.out.println("9. Tampilkan Pelanggan");
-                System.out.println("10. Keluar");
+                System.out.println("10. Transaksi Pemesanan");
+                System.out.println("11. Tampilkan Fasilitas");
+                System.out.println("12. Keluar");
+                System.out.println("================================");
                 System.out.print("Pilih menu: ");
 
                 int pilihan = scanner.nextInt();
@@ -313,17 +288,23 @@ public class KaraokeSystem {
                         tampilkanPelanggan();
                         break;
                     case 10:
+                        transaksiPemesanan();
+                        break;
+                    case 11:
+                        tampilkanFasilitas();
+                        break;
+                    case 12:
                         berjalan = false;
                         System.out.println("Program selesai.");
                         break;
                     default:
                         throw new KaraokeException(
-                                "Pilihan menu tidak tersedia.");
+                                "Pilihan menu tidak tersedia."
+                        );
                 }
 
             } catch (InputMismatchException e) {
-                System.out.println(
-                        "Error: Masukkan angka yang valid.");
+                System.out.println("Error: Masukkan angka yang valid.");
                 scanner.nextLine();
 
             } catch (KaraokeException e) {
