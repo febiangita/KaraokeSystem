@@ -128,6 +128,11 @@ public class KaraokeSystem {
 
         if (room instanceof DapatDipesan) {
             ((DapatDipesan) room).pesanRoom(durasi);
+
+            manajemen.catatAktivitas(
+                    "Room " + nama + " dipesan selama "
+                    + durasi + " jam."
+            );
         } else {
             throw new KaraokeException(
                     "Room tidak mendukung pemesanan."
@@ -167,6 +172,13 @@ public class KaraokeSystem {
                 new TransaksiPemesanan(pelanggan, room, durasi);
 
         transaksi.prosesTransaksi();
+
+        manajemen.catatAktivitas(
+                "Transaksi pemesanan oleh "
+                + pelanggan.getNama()
+                + " pada room " + room.getNamaRoom()
+                + " selama " + durasi + " jam."
+        );
     }
 
     private static void beriRating() throws KaraokeException {
@@ -187,6 +199,10 @@ public class KaraokeSystem {
 
         if (room instanceof DapatDiberiRating) {
             ((DapatDiberiRating) room).beriRating(rating);
+
+            manajemen.catatAktivitas(
+                    "Room " + nama + " mendapatkan rating " + rating
+            );
         } else {
             throw new KaraokeException(
                     "Room tidak mendukung rating."
@@ -227,11 +243,19 @@ public class KaraokeSystem {
     }
 
     public static void main(String[] args) {
-        try {
-            isiDataAwal();
-        } catch (KaraokeException e) {
-            System.out.println("Gagal mengisi data awal: " + e.getMessage());
-            return;
+
+        boolean dataAda = manajemen.muatDataDariFile();
+
+        if (!dataAda) {
+            try {
+                isiDataAwal();
+                manajemen.simpanDataKeFile();
+            } catch (KaraokeException e) {
+                System.out.println(
+                        "Gagal mengisi data awal: " + e.getMessage()
+                );
+                return;
+            }
         }
 
         boolean berjalan = true;
@@ -252,7 +276,10 @@ public class KaraokeSystem {
                 System.out.println("9. Tampilkan Pelanggan");
                 System.out.println("10. Transaksi Pemesanan");
                 System.out.println("11. Tampilkan Fasilitas");
-                System.out.println("12. Keluar");
+                System.out.println("12. Simpan Data");
+                System.out.println("13. Muat Data");
+                System.out.println("14. Tampilkan Log Aktivitas");
+                System.out.println("15. Keluar");
                 System.out.println("================================");
                 System.out.print("Pilih menu: ");
 
@@ -294,6 +321,21 @@ public class KaraokeSystem {
                         tampilkanFasilitas();
                         break;
                     case 12:
+                        manajemen.simpanDataKeFile();
+                        break;
+                    case 13:
+                        if (!manajemen.muatDataDariFile()) {
+                            System.out.println("Data tidak dapat dimuat.");
+                        }
+                        break;
+                    case 14:
+                        manajemen.bacaLogTransaksi();
+                        break;
+                    case 15:
+                        manajemen.simpanDataKeFile();
+                        manajemen.catatAktivitas(
+                                "Program Karaoke System ditutup."
+                        );
                         berjalan = false;
                         System.out.println("Program selesai.");
                         break;

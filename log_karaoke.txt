@@ -1,0 +1,11 @@
+[16-11-2026 16:28:02] Menambahkan room: Regular A
+[16-11-2026 16:28:02] Menambahkan room: Regular B
+[16-11-2026 16:28:02] Menambahkan room: VIP A
+[16-11-2026 16:28:02] Menambahkan room: VIP B
+[16-11-2026 16:28:02] Menambahkan room: Family A
+[16-11-2026 16:28:02] Menambahkan pelanggan: Andi (ID: P001)
+[16-11-2026 16:28:02] Menambahkan pelanggan: Budi (ID: P002)
+[16-11-2026 16:28:02] Menambahkan pelanggan: Citra (ID: P003)
+[16-11-2026 16:29:58] Program Karaoke System ditutup.
+[16-11-2026 16:34:39] Transaksi pemesanan oleh Andi pada room Regular A selama 2 jam.
+[16-11-2026 16:35:51] Program Karaoke System ditutup.

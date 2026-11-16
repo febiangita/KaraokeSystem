@@ -1,6 +1,10 @@
 package com.mycompany.karaokesystem;
 
-public class FasilitasKaraoke {
+import java.io.Serializable;
+
+public class FasilitasKaraoke implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String namaFasilitas;
     private String deskripsi;

@@ -1,6 +1,10 @@
 package com.mycompany.karaokesystem;
 
-public abstract class RoomKaraoke {
+import java.io.Serializable;
+
+public abstract class RoomKaraoke implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String namaRoom;
     private int kapasitas;
@@ -53,6 +57,10 @@ public abstract class RoomKaraoke {
 
     public static int getJumlahRoom() {
         return jumlahRoom;
+    }
+
+    public static void setJumlahRoom(int jumlah) {
+        jumlahRoom = jumlah;
     }
 
     public abstract double hitungBiaya(int durasiJam);
